@@ -37,8 +37,8 @@ namespace Sat.Recruitment.Application.Services
                     return validationResult;
                 }
 
-                user.NormalizeMail();
-                user.ApplyAmountBasedInUserType();
+                NormalizeMail(ref user);
+                ApplyAmountBasedInUserType(ref user);
 
                 await _userRepository.AddAsync(user);
 
@@ -51,7 +51,6 @@ namespace Sat.Recruitment.Application.Services
             }
         }
       
-
         private ValidationResult<User> ValidateUser(User user)
         {
             if (!ValidateRequiredProps(user))
@@ -140,8 +139,47 @@ namespace Sat.Recruitment.Application.Services
             }
         }
 
-        
+        public void ApplyAmountBasedInUserType(ref User user)
+        {
+            var typeFactors = new Dictionary<UserType, decimal>
+            {
+                { UserType.Normal, 0.8m},
+                { UserType.SuperUser, 0.2m },
+                { UserType.Premium, 2m }
+            };
 
+            var originalMoney = user.Money;
+
+            if (typeFactors.ContainsKey(user.UserType))
+            {
+                var factor = typeFactors[user.UserType];
+                user.Money = user.Money + (user.Money * factor);
+            }
+
+            if (user.UserType == UserType.Normal)
+            {
+                user.Money = originalMoney > 100 ? originalMoney + (originalMoney * 0.12m) : user.Money;
+            }
+        }
+
+        public void NormalizeMail(ref User user)
+        {
+            user.Email = user.Email.Trim();
+            if (!string.IsNullOrWhiteSpace(user.Email))
+            {
+                string[] emailParts = user.Email.Split('@');
+                if (emailParts.Length == 2)
+                {
+                    string username = emailParts[0].Replace(".", string.Empty);
+                    int plusIndex = username.IndexOf("+");
+                    if (plusIndex >= 0)
+                    {
+                        username = username.Remove(plusIndex);
+                    }
+                    user.Email = $"{username}@{emailParts[1]}";
+                }
+            }
+        }
     }
 }
 
