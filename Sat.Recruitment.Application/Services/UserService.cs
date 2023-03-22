@@ -31,6 +31,7 @@ namespace Sat.Recruitment.Application.Services
                 LogUtility.Info("Creating User");
 
                 var validationResult = ValidateUser(user);
+                
                 if (!validationResult.IsValid)
                 {
                     LogUtility.Error(validationResult.ErrorMessage);
