@@ -38,6 +38,7 @@ namespace Sat.Recruitment.Application.Services
                 }
 
                 NormalizeMail(ref user);
+                
                 ApplyAmountBasedInUserType(ref user);
 
                 await _userRepository.AddAsync(user);
